@@ -7,14 +7,16 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
-type Domain struct {
-	views map[string]int
+func init() {
+	godotenv.Load(".env.local")
 }
 
 func main() {
-	// domains := make(map[string]Domain)
+	initDb()
+	createTables()
 
 	port := os.Getenv("PORT")
 
@@ -44,11 +46,35 @@ func main() {
 	// 	c.JSON(200, newV)
 	// })
 
-	r.POST("/domain", func(c *gin.Context) {
-		fmt.Println("aaa")
+	r.POST("/site", func(ctx *gin.Context) {
+		b, ioErr, jsonErr := readBody[Site](ctx)
+		_, dbErr := db.Exec("INSERT INTO Site VALUES ($1, $2)", b.Id, b.Name)
 
-		fmt.Println(c.Request.Body)
-		c.JSON(200, "aaa")
+		if ioErr != nil {
+			ctx.String(400, "IO Error")
+		}
+
+		if jsonErr != nil {
+			ctx.String(400, "JSON Format not right")
+		}
+
+		ctx.JSON(200, "OK")
+	})
+
+	r.GET("/sites", func(ctx *gin.Context) {
+		rows := cfie(db.Query("SELECT id, name FROM Site"))
+
+		defer rows.Close()
+
+		sites := []Site{}
+
+		for rows.Next() {
+			row := Site{}
+			rows.Scan(&row.Id, &row.Name)
+			sites = append(sites, row)
+		}
+
+		ctx.JSON(200, sites)
 	})
 
 	r.Run(fmt.Sprintf(":%s", port))
