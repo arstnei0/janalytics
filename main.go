@@ -47,18 +47,18 @@ func main() {
 	// })
 
 	r.POST("/site", func(ctx *gin.Context) {
-		b, ioErr, jsonErr := readBody[Site](ctx)
-		_, dbErr := db.Exec("INSERT INTO Site VALUES ($1, $2)", b.Id, b.Name)
+		b, jsonErr := readBody[Site](ctx)
 
-		if ioErr != nil {
-			ctx.String(400, "IO Error")
+		ifJSONErrRespondErr(jsonErr, ctx)
+
+		if ifNoErr(jsonErr) == nil {
+			_, dbErr := db.Exec("INSERT INTO Site VALUES ($1, $2)", b.Id, b.Name)
+			ifDbErrRespondErr(dbErr, ctx)
+
+			if ifNoErr(dbErr) == nil {
+				ctx.JSON(200, "OK")
+			}
 		}
-
-		if jsonErr != nil {
-			ctx.String(400, "JSON Format not right")
-		}
-
-		ctx.JSON(200, "OK")
 	})
 
 	r.GET("/sites", func(ctx *gin.Context) {

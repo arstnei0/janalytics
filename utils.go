@@ -21,13 +21,17 @@ func cfie[T any](result T, err error) T {
 	return result
 }
 
-func readBody[T any](c *gin.Context) (T, error, error) {
+func readBody[T any](ctx *gin.Context) (T, error) {
 	var result T
-	body, ioErr := io.ReadAll(c.Request.Body)
+	body, ioErr := io.ReadAll(ctx.Request.Body)
 
 	jsonErr := json.Unmarshal(body, &result)
 
-	return result, ioErr, jsonErr
+	if ioErr != nil {
+		ctx.String(400, "IO Error!")
+	}
+
+	return result, jsonErr
 }
 
 func ifDbErrRespondErr(err error, ctx *gin.Context) {
@@ -36,8 +40,24 @@ func ifDbErrRespondErr(err error, ctx *gin.Context) {
 	}
 }
 
-func ifErrRespondErr(err error, ctx *gin.Context) {
+func ifJSONErrRespondErr(err error, ctx *gin.Context) {
 	if err != nil {
-		ctx.String(500, "DB Error!")
+		ctx.String(400, "JSON Format Wrong!")
 	}
+}
+
+func ifIOErrRespondErr(err error, ctx *gin.Context) {
+	if err != nil {
+		ctx.String(400, "IO Error!")
+	}
+}
+
+func ifNoErr(errs ...error) error {
+	for _, err := range errs {
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
