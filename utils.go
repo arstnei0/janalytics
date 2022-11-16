@@ -9,47 +9,56 @@ import (
 )
 
 // Check If Error
-func cie(err error) {
+func failIfErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func cfie[T any](result T, err error) T {
-	cie(err)
+func failIfFuncErr[T any](result T, err error) T {
+	failIfErr(err)
 
 	return result
 }
 
-func readBody[T any](ctx *gin.Context) (T, error) {
+func readBody[T any](ctx *gin.Context) (T, error, error) {
 	var result T
 	body, ioErr := io.ReadAll(ctx.Request.Body)
 
 	jsonErr := json.Unmarshal(body, &result)
 
-	if ioErr != nil {
-		ctx.String(400, "IO Error!")
+	if ifIOErrRespondErrElse(ioErr, ctx) {
+		return result, jsonErr, nil
 	}
 
-	return result, jsonErr
+	return result, jsonErr, ioErr
 }
 
-func ifDbErrRespondErr(err error, ctx *gin.Context) {
+func ifDbErrRespondErrElse(err error, ctx *gin.Context) bool {
 	if err != nil {
 		ctx.String(500, "DB Error!")
+		return false
 	}
+
+	return true
 }
 
-func ifJSONErrRespondErr(err error, ctx *gin.Context) {
+func ifJSONErrRespondErrElse(err error, ctx *gin.Context) bool {
 	if err != nil {
 		ctx.String(400, "JSON Format Wrong!")
+		return false
 	}
+
+	return true
 }
 
-func ifIOErrRespondErr(err error, ctx *gin.Context) {
+func ifIOErrRespondErrElse(err error, ctx *gin.Context) bool {
 	if err != nil {
 		ctx.String(400, "IO Error!")
+		return false
 	}
+
+	return true
 }
 
 func ifNoErr(errs ...error) error {

@@ -17,6 +17,7 @@ func init() {
 func main() {
 	initDb()
 	createTables()
+	pages = make(map[string]Page)
 
 	port := os.Getenv("PORT")
 
@@ -33,36 +34,20 @@ func main() {
 
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	// r.GET("/view/:id", func(c *gin.Context) {
-	// 	id := c.Param("id")
-	// 	v, prs := views[id]
-	// 	if !prs {
-	// 		views[id] = 0
-	// 	}
-
-	// 	newV := v + 1
-	// 	views[id] = newV
-
-	// 	c.JSON(200, newV)
-	// })
-
 	r.POST("/site", func(ctx *gin.Context) {
-		b, jsonErr := readBody[Site](ctx)
+		b, jsonErr, ioErr := readBody[Site](ctx)
 
-		ifJSONErrRespondErr(jsonErr, ctx)
-
-		if ifNoErr(jsonErr) == nil {
+		if ifJSONErrRespondErrElse(jsonErr, ctx) && ioErr == nil {
 			_, dbErr := db.Exec("INSERT INTO Site VALUES ($1, $2)", b.Id, b.Name)
-			ifDbErrRespondErr(dbErr, ctx)
 
-			if ifNoErr(dbErr) == nil {
-				ctx.JSON(200, "OK")
+			if ifDbErrRespondErrElse(dbErr, ctx) {
+				ctx.String(200, "OK")
 			}
 		}
 	})
 
 	r.GET("/sites", func(ctx *gin.Context) {
-		rows := cfie(db.Query("SELECT id, name FROM Site"))
+		rows := failIfFuncErr(db.Query("SELECT id, name FROM Site"))
 
 		defer rows.Close()
 
@@ -75,6 +60,17 @@ func main() {
 		}
 
 		ctx.JSON(200, sites)
+	})
+
+	r.GET("/:site/:id", func(ctx *gin.Context) {
+		siteId := ctx.Param("site")
+		pageId := ctx.Param("id")
+
+		page := viewPage(ctx, siteId, pageId)
+
+		// fmt.Println(page.Views)
+
+		ctx.JSON(200, page.Views)
 	})
 
 	r.Run(fmt.Sprintf(":%s", port))
