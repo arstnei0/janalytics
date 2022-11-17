@@ -19,7 +19,14 @@ func main() {
 	initDb()
 	createTables()
 	pages = make(map[string]Page)
-	writeNumberProcessing, _ := strconv.Atoi(os.Getenv("DB_WRITE_NUMBER"))
+	writeNumberString := os.Getenv("DB_WRITE_NUMBER")
+	var writeNumberProcessing int
+	if writeNumberString == "" {
+		writeNumberProcessing = 5
+	} else {
+		writeNumberProcessing, _ = strconv.Atoi(writeNumberString)
+	}
+
 	writeNumber = uint32(writeNumberProcessing) / 2
 
 	port := os.Getenv("PORT")
