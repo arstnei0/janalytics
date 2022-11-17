@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <style>
+            body {
+                /* display: flex;
+                flex-direction: column;
+                align-items: center; */
+            }
+
+            main {
+
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            Add this code to your site(add it to where you want to put your `views` at):<br />
+            Replace the &lt;&lt;id&gt;&gt; inside the code with the id of your page(e.g. the url of that page)<br />
+            <button onclick="navigator.clipboard.writeText(document.getElementsByTagName('xmp')[0].innerHTML);">Copy to clipboard</button>
+            <xmp><script defer id="janalytics">(async ()=>{const s=document.querySelector('script#janalytics');const r=await fetch("https://janalytics.zihan.ga/{{ .id }}/<<id>>");s.insertAdjacentText('afterend',await r.text());})()</script></xmp>
+
+            <br />The guide page is viewed <script defer id="janalytics">(async ()=>{const s=document.querySelector('script#janalytics');const r=await fetch("https://janalytics.zihan.ga/janalytics/guide");s.insertAdjacentText('afterend',await r.text());})()</script> times.
+        </main>
+    </body>
+</html>

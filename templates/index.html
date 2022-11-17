@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create a site</title>
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            main {
+                
+            }
+
+            footer {
+                margin-top: 10%;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Create a new janalytics site</h1>
+            <label for="id">Site ID:&nbsp;</label><input id="id"><br /><br />
+            <label for="name">Site Name:&nbsp;</label><input id="name"><br /><br />
+            <button onclick="submit()">Create</button>
+        </main>
+        <footer>This site is open source at <a href="https://github.com/zihan-ch/janalytics">Github</a>.</footer>
+        <script>
+            const submit = async () => {
+                id = document.querySelector("input#id").value
+                name = document.querySelector("input#name").value
+                
+                if (!id || !name) {
+                    alert("please provide the id and the name!")
+                    return
+                }
+
+                const result = await fetch("/site", {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        id,
+                        name,
+                    })
+                })
+
+                if (result.status === 200) {
+                    location.href = `/guide/${id}`
+                } else {
+                    alert("Site id already exists! Please try to use another id.")
+                }
+            }
+        </script>
+
+        The home page is viewed <script defer id="janalytics">(async ()=>{const s=document.querySelector('script#janalytics');const r=await fetch("https://janalytics.zihan.ga/janalytics/home");s.insertAdjacentText('afterend',await r.text());})()</script> times.
+    </body>
+</html>

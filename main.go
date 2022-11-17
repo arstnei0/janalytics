@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -19,6 +20,8 @@ func main() {
 	initDb()
 	createTables()
 	pages = make(map[string]Page)
+
+	// init writeNumber
 	writeNumberString := os.Getenv("DB_WRITE_NUMBER")
 	var writeNumberProcessing int
 	if writeNumberString == "" {
@@ -26,11 +29,9 @@ func main() {
 	} else {
 		writeNumberProcessing, _ = strconv.Atoi(writeNumberString)
 	}
-
 	writeNumber = uint32(writeNumberProcessing) / 2
 
 	port := os.Getenv("PORT")
-
 	if port == "" {
 		port = "8080"
 	}
@@ -41,8 +42,9 @@ func main() {
 		AllowAllOrigins: true,
 		AllowMethods:    []string{"POST", "GET"},
 	}))
-
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
+
+	r.LoadHTMLGlob("templates/*")
 
 	r.POST("/site", func(ctx *gin.Context) {
 		b, jsonErr, ioErr := readBody[Site](ctx)
@@ -72,6 +74,12 @@ func main() {
 		ctx.JSON(200, sites)
 	})
 
+	r.GET("/guide/:id", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "guide.html", gin.H{
+			"id": ctx.Param("id"),
+		})
+	})
+
 	r.GET("/:site/:id", func(ctx *gin.Context) {
 		siteId := ctx.Param("site")
 		pageId := ctx.Param("id")
@@ -84,7 +92,7 @@ func main() {
 	})
 
 	r.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(200, "hello")
+		ctx.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
 	r.Run(fmt.Sprintf(":%s", port))
