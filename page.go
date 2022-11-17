@@ -28,23 +28,24 @@ var pages map[string]Page
 var writeNumber uint32
 
 func viewPage(ctx *gin.Context, siteId string, pageId string) Page {
-	if page, ok := pages[pageId]; ok {
+	sitePlusPage := siteId + pageId
+	if page, ok := pages[sitePlusPage]; ok {
 		page.Views += 1
-		pages[pageId] = page
+		pages[sitePlusPage] = page
 	} else {
 		page, err := getPage(siteId, pageId)
 
 		if err == sql.ErrNoRows {
 			page, _ := createPage(siteId, pageId)
 			page.Views += 1
-			pages[pageId] = page
+			pages[sitePlusPage] = page
 		} else {
 			page.Views += 1
-			pages[pageId] = page
+			pages[sitePlusPage] = page
 		}
 	}
 
-	page := pages[pageId]
+	page := pages[sitePlusPage]
 
 	if page.Views%writeNumber == 0 {
 		go func() {
