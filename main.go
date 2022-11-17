@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
@@ -18,6 +19,8 @@ func main() {
 	initDb()
 	createTables()
 	pages = make(map[string]Page)
+	writeNumberProcessing, _ := strconv.Atoi(os.Getenv("DB_WRITE_NUMBER"))
+	writeNumber = uint32(writeNumberProcessing) / 2
 
 	port := os.Getenv("PORT")
 
@@ -71,6 +74,10 @@ func main() {
 		// fmt.Println(page.Views)
 
 		ctx.JSON(200, page.Views)
+	})
+
+	r.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(200, "hello")
 	})
 
 	r.Run(fmt.Sprintf(":%s", port))

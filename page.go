@@ -25,6 +25,7 @@ func createPageTable() {
 }
 
 var pages map[string]Page
+var writeNumber uint32
 
 func viewPage(ctx *gin.Context, siteId string, pageId string) Page {
 	if page, ok := pages[pageId]; ok {
@@ -45,8 +46,12 @@ func viewPage(ctx *gin.Context, siteId string, pageId string) Page {
 
 	page := pages[pageId]
 
-	_, err := db.Exec("UPDATE page SET views=views+1 WHERE id=$1 AND site=$2", pageId, siteId)
-	failIfErr(err)
+	if page.Views%writeNumber == 0 {
+		go func() {
+			_, err := db.Exec("UPDATE page SET views=views+$1 WHERE id=$2 AND site=$3", writeNumber, pageId, siteId)
+			failIfErr(err)
+		}()
+	}
 
 	return page
 }
