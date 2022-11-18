@@ -28,7 +28,7 @@ var pages map[string]Page
 var writeNumber uint32
 
 func viewPage(ctx *gin.Context, siteId string, pageId string) Page {
-	sitePlusPage := siteId + pageId
+	sitePlusPage := siteId + "/" + pageId
 	if page, ok := pages[sitePlusPage]; ok {
 		page.Views += 1
 		pages[sitePlusPage] = page
