@@ -80,7 +80,7 @@ func main() {
 		})
 	})
 
-	r.GET("/:site/:id", func(ctx *gin.Context) {
+	r.GET("/:site/*id", func(ctx *gin.Context) {
 		siteId := ctx.Param("site")
 		pageId := ctx.Param("id")
 
